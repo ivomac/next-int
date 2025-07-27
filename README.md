@@ -32,13 +32,12 @@ OEIS catalogues puzzles with IDs starting with "A" and followed by 6 digits. We 
 https://oeis.org/A******?fmt=json
 ```
 
-The fields are:
+We save the fields:
 
 ```python
-id: str
 number: int         # The integer in A______
-data: str           # Comma-separated integer sequence
-name: str           # Usually includes a description of the sequence
+data: list[int]     # The integer sequence
+name: str           # Usually includes a definition/description of the sequence
 comment: list[str]  # Different interpretations of the sequence plus sources
 ```
 
