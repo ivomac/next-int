@@ -57,3 +57,32 @@ We expect that the sequences may be bunched and categorized given the results. F
 
 Almost all puzzles belong to the last category.
 
+### Results Structure
+
+```python
+class Result:
+    # Sequence metadata
+    oeis_id: str                    # e.g., "A000040"
+    sequence_data: list[int]        # The actual sequence values
+    sequence_name: str              # OEIS name/description
+
+    # Experimental conditions
+    model_name: str                 # e.g., "gpt-4", "claude-3-sonnet"
+    capability_level: str           # "single_guess", "reasoning", "compute"
+    sequence_length: int            # How many terms provided
+    starting_point: int             # Which term we started from
+    include_description: bool       # Whether OEIS description was included
+
+    # Results
+    correct_answer: int             # The true next term
+    model_guess: int                # What the model guessed
+    is_correct: bool                # Whether guess was exactly right
+    absolute_error: int             # |guess - correct|
+
+    # Additional data
+    model_reasoning: str            # Full reasoning/explanation (if applicable)
+    generated_code: str | None      # Python code (if compute mode)
+    response_time: float            # How long the model took
+    timestamp: datetime             # When experiment was run
+```
+
