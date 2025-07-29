@@ -35,6 +35,7 @@ NUM_SEQUENCES: int = 10
 PARAMETER_SPACE: dict[str, list] = {
     "model_name": [
         "gpt-4o-mini",
+        "gpt-4o",
         "o4-mini",
         "gpt-4.1",
         "claude-3-5-haiku-20241022",
@@ -43,10 +44,19 @@ PARAMETER_SPACE: dict[str, list] = {
         "gemini/gemini-2.5-flash-lite",
         "gemini/gemini-2.5-flash",
         "xai/grok-4",
+        "deepseek/deepseek-coder",
+        "deepseek/deepseek-reasoner",
+        # "qwen/qwen-2.5-72b-instruct",
+        # "meta-llama/llama-3.1-8b-instruct",
+        # "meta-llama/llama-3.1-70b-instruct",
+        # "meta-llama/llama-3.1-405b-instruct",
+        # "mistral/mistral-small",
+        # "mistral/mistral-medium",
+        # "mistral/mistral-large",
     ],
     "capability": [
-        "single_guess",  # Only output guess
-        "compute",  # Output Python script, run it, then guess
+        "single_guess",
+        "compute",
     ],
     "include_description": [True, False],
     "sequence_start": [0],
