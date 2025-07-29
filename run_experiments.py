@@ -27,6 +27,8 @@ TIMEOUT: dict = {
     "call": 10,
 }
 
+RETRIES: int = 3
+
 TEMPERATURE: float = 0.0
 TOP_K: int = 1
 
@@ -180,17 +182,19 @@ async def guess_next_integer(
         nonlocal cost
         messages.append({"role": "user", "content": prompt})
 
-        try:
-            response = await litellm.acompletion(
-                model=config["model_name"],
-                messages=messages,
-                # temperature=TEMPERATURE,
-                # top_k=TOP_K,
-                timeout=TIMEOUT["call"],
-            )
-        except Exception as e:
-            log_data["error"] = str(e)
-            return None
+        for r in range(RETRIES):
+            try:
+                response = await litellm.acompletion(
+                    model=config["model_name"],
+                    messages=messages,
+                    # temperature=TEMPERATURE,
+                    # top_k=TOP_K,
+                    timeout=TIMEOUT["call"],
+                )
+            except Exception as e:
+                if r == RETRIES - 1:
+                    log["error"] = str(e)
+                    return None
 
         content = response.choices[0].message.content
         cost += response._hidden_params["response_cost"]
