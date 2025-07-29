@@ -83,7 +83,7 @@ OUTCOME_SPACE_DTYPE: dict[str, str] = {
     "expected": "Int64",
     "is_correct": "boolean",
     "absolute_error": "Int64",
-    "cost": "float64",
+    "cost": "Float64",
 }
 
 LOGS_DIR.mkdir(parents=True, exist_ok=True)
@@ -113,6 +113,41 @@ def execute_code(code: str) -> str:
     finally:
         if tmp_path.is_file():
             tmp_path.unlink()
+
+
+def estimate_experiment_costs(existing_df: pd.DataFrame, new_df: pd.DataFrame):
+    """Estimate and print the total cost of running new experiments based on existing data."""
+
+    # Calculate average cost per (model_name, capability) combination
+    avg_costs = existing_df.groupby(["model_name", "capability"], observed=False)["cost"].mean()
+
+    # Create pivot table with models as rows and capabilities as columns
+    cost_table = avg_costs.unstack(fill_value=0)
+
+    print("\nAverage costs in cents per 100 experiments:")
+    print(cost_table.to_string(float_format=lambda x: f"{100*100*x:.2f}"))
+
+    # Calculate estimated total cost for new experiments
+    total_estimated_cost = 0.0
+    experiments_with_estimates = 0
+
+    for _, exp in new_df.iterrows():
+        key = (exp["model_name"], exp["capability"])
+        if key in avg_costs and not pd.isna(avg_costs.at[key]):
+            total_estimated_cost += avg_costs.at[key]
+            experiments_with_estimates += 1
+
+    experiments_without_estimates = len(new_df) - experiments_with_estimates
+
+    # scale total_estimated_cost by fraction of experiments with estimate
+
+    if experiments_with_estimates > 0:
+        total_estimated_cost /= experiments_with_estimates / len(new_df)
+
+    print("\nCost estimation summary:")
+    print(f"  Experiments with cost estimates: {experiments_with_estimates}")
+    print(f"  Experiments without cost estimates: {experiments_without_estimates}")
+    print(f"  Estimated total cost: ${total_estimated_cost:.4f}")
 
 
 def guess_next_integer(
@@ -258,6 +293,14 @@ def main():
     ).reset_index(drop=True)
 
     print(f"Total experiments to run: {len(new_df)}")
+
+    # Estimate costs if we have existing data
+    if existing_df is not None:
+        estimate_experiment_costs(existing_df, new_df)
+
+    if input("Proceed? (y/N): ").lower() != "y":
+        print("Aborting.")
+        return
 
     completed = []
     for i, exp in new_df.iterrows():
