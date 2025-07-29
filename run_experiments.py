@@ -19,7 +19,7 @@ import pandas as pd
 # =============================================================================
 
 
-VERBOSE: int = 2
+VERBOSE: int = 0
 
 TIMEOUT: dict = {
     "execution": 30,
@@ -269,7 +269,6 @@ def main():
     else:
         existing_df = None
 
-    print("Loading OEIS data into parameters...")
     with open(OEIS_DATA_PATH, "r") as f:
         oeis_data = [json.loads(line) for line in f]
         oeis_data = {seq["number"]: seq for seq in oeis_data}
@@ -316,6 +315,7 @@ def main():
     for i, exp in new_df.iterrows():
         if VERBOSE >= 1:
             print(f"\nRunning experiment {i}/{len(new_df)}")
+        if VERBOSE >= 2:
             print(f"  OEIS: {exp['oeis_id']}")
             print(f"  Model: {exp['model_name']}")
             print(f"  Capability: {exp['capability']}")
@@ -337,7 +337,8 @@ def main():
         exp_id = secrets.randbits(63)
 
         if out is None:
-            print(f"  {log_data['error']}")
+            if VERBOSE >= 2:
+                print(f"  {log_data['error']}")
             log_name = f"{timestamp}-ERROR.json"
             with open(LOGS_DIR / log_name, "w") as f:
                 json.dump(log_data, f, indent=2)
@@ -370,7 +371,7 @@ def main():
             cost,
         ]
 
-        if VERBOSE >= 1:
+        if VERBOSE >= 2:
             print(f"  Guess: {guess}")
             print(f"  Expected: {sequence_info['expected']}")
             print(f"  IsCorrect: {new_df.at[i, 'is_correct']}")
