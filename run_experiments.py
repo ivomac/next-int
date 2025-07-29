@@ -3,6 +3,7 @@
 
 """Run LLM experiments on OEIS integer sequence prediction."""
 
+import asyncio
 import itertools
 import json
 import secrets
@@ -160,7 +161,7 @@ def estimate_experiment_costs(existing_df: pd.DataFrame, new_df: pd.DataFrame):
     print(f"  Estimated total cost: ${total_estimated_cost:.4f}")
 
 
-def guess_next_integer(
+async def guess_next_integer(
     config: pd.Series, sequence_info: dict
 ) -> tuple[tuple[int, int] | None, dict]:
     """Ask an LLM for the next integer in the sequence."""
@@ -173,12 +174,12 @@ def guess_next_integer(
         "error": "",
     }
 
-    def query_llm(prompt: str) -> str | None:
+    async def query_llm(prompt: str) -> str | None:
         nonlocal cost
         messages.append({"role": "user", "content": prompt})
 
         try:
-            response = litellm.completion(
+            response = await litellm.acompletion(
                 model=config["model_name"],
                 messages=messages,
                 # temperature=TEMPERATURE,
@@ -215,7 +216,7 @@ def guess_next_integer(
             "I will then share the stdout in my next message."
         )
 
-        code_response = query_llm(prompt)
+        code_response = await query_llm(prompt)
         if code_response is None:
             return None, log_data
 
@@ -232,7 +233,7 @@ def guess_next_integer(
         "Your next message will be directly converted in python with int()."
     )
 
-    response = query_llm(prompt)
+    response = await query_llm(prompt)
     if response is None:
         return None, log_data
 
@@ -250,7 +251,7 @@ def guess_next_integer(
     return (guess, cost), log_data
 
 
-def main():
+async def main():
     """Run the experiment suite."""
 
     # Load existing experiments file
@@ -331,7 +332,7 @@ def main():
         sequence_info["partial"] = sequence_full[start : start + length]
         sequence_info["expected"] = sequence_full[start + length]
 
-        out, log_data = guess_next_integer(exp, sequence_info)
+        out, log_data = await guess_next_integer(exp, sequence_info)
 
         timestamp = pd.Timestamp.now()
         exp_id = secrets.randbits(63)
@@ -396,4 +397,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
