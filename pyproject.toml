@@ -1,0 +1,42 @@
+[project]
+name = "LLM-seq"
+version = "0.1"
+description = "LLMs guessing integer sequence"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [
+  { name = "Ivo Maceira", email = "ivomaceira@gmail.com" }
+]
+dependencies = [
+]
+
+[project.optional-dependencies]
+dev = [
+  "ruff",
+  "ty",
+]
+
+[tool.uv]
+python = "3.12"
+
+[tool.ruff]
+target-version = "py312"
+exclude = ["build", "dist", ".venv"]
+extend-include = ["*.pyi"]
+line-length = 100
+indent-width = 4
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "NPY201", "RET"]
+ignore = ["D203", "D213"]
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
+
+
