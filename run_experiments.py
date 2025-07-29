@@ -171,7 +171,7 @@ async def guess_next_integer(
     messages = []
 
     cost = 0
-    log_data = {
+    log = {
         "messages": [],
         "error": "",
     }
@@ -220,15 +220,15 @@ async def guess_next_integer(
 
         code_response = await query_llm(prompt)
         if code_response is None:
-            return None, log_data
+            return None, log
 
-        log_data["messages"].extend([prompt, code_response])
+        log["messages"].extend([prompt, code_response])
 
         try:
             prompt = execute_code(code_response)
         except Exception as e:
-            log_data["error"] = str(e)
-            return None, log_data
+            log["error"] = str(e)
+            return None, log
 
     prompt += (
         "Output only the integer, nothing else. "
@@ -237,20 +237,27 @@ async def guess_next_integer(
 
     response = await query_llm(prompt)
     if response is None:
-        return None, log_data
+        return None, log
 
-    log_data["messages"] = [prompt, response]
+    log["messages"] = [prompt, response]
 
     try:
         guess = int(response)
     except Exception as e:
         error = f"Error parsing model guess: {str(e)}"
-        log_data["error"] = error
-        return None, log_data
+        log["error"] = error
+        return None, log
 
-    log_data["cost"] = cost
+    return (guess, cost), log
 
-    return (guess, cost), log_data
+
+def save_log(log: dict, exp_info: dict):
+    timestamp = exp_info.pop("timestamp")
+    exp_id = exp_info.pop("experiment_id") or "ERROR"
+    log.update(exp_info)
+    log_name = f"{timestamp}-{exp_id}.json"
+    with open(LOGS_DIR / log_name, "w") as f:
+        json.dump(log, f, indent=2)
 
 
 async def main():
@@ -302,7 +309,7 @@ async def main():
 
     new_df = new_df.sort_values(
         by=["oeis_id", "include_description", "capability", "model_name"]
-    ).reset_index(drop=True)
+    ).reset_index(drop=True)  # type: ignore
 
     print(f"Total experiments to run: {len(new_df)}")
 
@@ -324,6 +331,8 @@ async def main():
             print(f"  Capability: {exp['capability']}")
             print(f"  Description: {exp['include_description']}")
 
+        new_df.loc[i, "timestamp"] = pd.Timestamp.now()
+
         sequence_info = oeis_data[exp["oeis_id"]]
 
         sequence_full = sequence_info["data"]
@@ -334,24 +343,15 @@ async def main():
         sequence_info["partial"] = sequence_full[start : start + length]
         sequence_info["expected"] = sequence_full[start + length]
 
-        out, log_data = await guess_next_integer(exp, sequence_info)
-
-        timestamp = pd.Timestamp.now()
-        exp_id = secrets.randbits(63)
+        out, log = await guess_next_integer(exp, sequence_info)
 
         if out is None:
             if VERBOSE >= 2:
-                print(f"  {log_data['error']}")
-            log_name = f"{timestamp}-ERROR.json"
-            with open(LOGS_DIR / log_name, "w") as f:
-                json.dump(log_data, f, indent=2)
+                print(f"  {log['error']}")
+            save_log(log, new_df.loc[i].to_dict())
             continue
 
         guess, cost = out
-
-        log_name = f"{timestamp}-{exp_id:019d}.json"
-        with open(LOGS_DIR / log_name, "w") as f:
-            json.dump(log_data, f, indent=2)
 
         new_df.loc[
             i,
@@ -361,7 +361,6 @@ async def main():
                 "is_correct",
                 "absolute_error",
                 "experiment_id",
-                "timestamp",
                 "cost",
             ],
         ] = [
@@ -369,10 +368,11 @@ async def main():
             sequence_info["expected"],
             guess == sequence_info["expected"],
             abs(guess - sequence_info["expected"]),
-            exp_id,
-            timestamp,
+            secrets.randbits(63),
             cost,
         ]
+
+        save_log(log, new_df.loc[i].to_dict())
 
         if VERBOSE >= 2:
             print(f"  Guess: {guess}")
