@@ -35,18 +35,17 @@ NUM_SEQUENCES: int = 10
 
 PARAMETER_SPACE: dict[str, list] = {
     "model_name": [
-        "gpt-4o-mini",
-        "gpt-4o",
-        "o4-mini",
-        "gpt-4.1",
-        "claude-3-5-haiku-20241022",
-        "claude-sonnet-4-20250514",
-        # "claude-opus-4-20250514", # expensive
+        "openai/gpt-4o-mini",
+        "openai/gpt-4o",
+        "openai/o4-mini",
+        "openai/gpt-4.1",
+        "anthropic/claude-3-5-haiku-20241022",
+        "anthropic/claude-sonnet-4-20250514",
         "gemini/gemini-2.5-flash-lite",
         "gemini/gemini-2.5-flash",
-        "xai/grok-4",
+        "xai/grok-3-mini",
+        "xai/grok-3",
         "deepseek/deepseek-coder",
-        "deepseek/deepseek-reasoner",
         # "qwen/qwen-2.5-72b-instruct",
         # "meta-llama/llama-3.1-8b-instruct",
         # "meta-llama/llama-3.1-70b-instruct",
@@ -54,6 +53,9 @@ PARAMETER_SPACE: dict[str, list] = {
         # "mistral/mistral-small",
         # "mistral/mistral-medium",
         # "mistral/mistral-large",
+        # # "anthropic/claude-opus-4-20250514", # expensive
+        # # "xai/grok-4-0709", # not available?
+        # # "deepseek/deepseek-reasoner", # not available?
     ],
     "capability": [
         "single_guess",
@@ -136,7 +138,7 @@ def estimate_experiment_costs(existing_df: pd.DataFrame, new_df: pd.DataFrame):
     cost_table = avg_costs.unstack(fill_value=0)
 
     print("\nAverage costs in cents per 100 experiments:")
-    print(cost_table.to_string(float_format=lambda x: f"{100*100*x:.2f}"))
+    print(cost_table.to_string(float_format=lambda x: f"{100 * 100 * x:.2f}"))  # type: ignore
 
     # Calculate estimated total cost for new experiments
     total_estimated_cost = 0.0
