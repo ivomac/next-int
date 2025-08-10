@@ -37,24 +37,25 @@ NUM_SEQUENCES: int = 4
 
 PARAMETER_SPACE: dict[str, list] = {
     "model_name": [
+        # Tier 1
         "openai/gpt-4o-mini",
-        "openai/gpt-4o",
-        "openai/o4-mini",
-        "openai/gpt-4.1",
-        "anthropic/claude-3-5-haiku-20241022",
-        "anthropic/claude-sonnet-4-20250514",
-        "gemini/gemini-2.5-flash-lite",
-        "gemini/gemini-2.5-flash",
         "xai/grok-3-mini",
-        "xai/grok-3",
+        "gemini/gemini-2.5-flash-lite",
         "deepseek/deepseek-coder",
-        # "qwen/qwen-2.5-72b-instruct",
         # "meta-llama/llama-3.1-8b-instruct",
+        "mistral/mistral-medium-2505",
+        # Tier 2
+        "openai/gpt-4o",
+        "xai/grok-3",
+        "gemini/gemini-2.5-flash",
+        "anthropic/claude-3-5-haiku-20241022",
         # "meta-llama/llama-3.1-70b-instruct",
+        "mistral/mistral-large-2411",
+        # Tier 3
+        "openai/o4-mini",
+        "anthropic/claude-sonnet-4-20250514",
         # "meta-llama/llama-3.1-405b-instruct",
-        # "mistral/mistral-small",
-        # "mistral/mistral-medium",
-        # "mistral/mistral-large",
+        # "qwen/qwen-2.5-72b-instruct",
         # # "anthropic/claude-opus-4-20250514", # expensive
         # # "xai/grok-4-0709", # not available?
         # # "deepseek/deepseek-reasoner", # not available?
