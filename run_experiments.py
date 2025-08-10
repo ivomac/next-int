@@ -219,10 +219,10 @@ async def guess_next_integer(
 
     if config["capability"] == "compute":
         prompt += (
-            "First, write a Python script. Output only the Python code, nothing else. "
-            "Your next message will be directly executed as python code with exec(). "
-            "DO NOT wrap it with markdown backticks (```python ```). NEVER. "
-            "DO NOT add any comments (# a comment). NEVER. "
+            "First, write a Python script. OUTPUT ONLY PYTHON CODE, NOTHING ELSE. "
+            "Your next message will be entirely executed as python code with exec(message). "
+            "NEVER wrap your message with markdown backticks like ```python ```. "
+            "NEVER add any comments. "
             f"Your script should execute in under {TIMEOUT['execution']} seconds or it will fail. "
             "I will then share the stdout in my next message."
         )
@@ -240,8 +240,8 @@ async def guess_next_integer(
             return None, log
 
     prompt += (
-        "Output only the integer, nothing else. "
-        "Your next message will be directly converted in python with int()."
+        "OUTPUT ONLY AN INTEGER, NOTHING ELSE.\n"
+        "Your next message will be entirely converted with int(message) in python."
     )
 
     response = await query_llm(prompt)
