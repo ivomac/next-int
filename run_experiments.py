@@ -20,10 +20,10 @@ import pandas as pd
 # =============================================================================
 
 
-VERBOSE: int = 0
+VERBOSE: int = 2
 
 TIMEOUT: dict = {
-    "execution": 30,
+    "execution": 20,
     "call": 10,
 }
 
@@ -33,7 +33,7 @@ TEMPERATURE: float = 0.0
 TOP_K: int = 1
 
 # Number of sequences to use
-NUM_SEQUENCES: int = 10
+NUM_SEQUENCES: int = 4
 
 PARAMETER_SPACE: dict[str, list] = {
     "model_name": [
@@ -63,7 +63,7 @@ PARAMETER_SPACE: dict[str, list] = {
         "single_guess",
         "compute",
     ],
-    "include_description": [True, False],
+    "include_description": [False],  # True,
     "sequence_start": [0],
     "sequence_length": [8],
     "experiment_id": [pd.NA],
