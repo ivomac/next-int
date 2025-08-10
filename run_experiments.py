@@ -210,6 +210,7 @@ async def guess_next_integer(
                 if r == RETRIES - 1:
                     log["error"] = str(e)
                     return None
+        return None
 
     sequence_str = ", ".join(str(s) for s in sequence_info["partial"])
     prompt = f"Given the integer sequence: {sequence_str}\n"
@@ -313,11 +314,14 @@ async def main():
     if existing_df is not None:
         # Join the existing df with the new df
         param_names = list(PARAMETER_SPACE.keys())
-        new_df = pd.merge(
-            new_df, existing_df[param_names], on=param_names, how="left", indicator=True
+        merged = new_df.merge(
+            existing_df[param_names],
+            on=param_names,
+            how="left",
+            indicator=True,
         )
         # Keep only the experiments that have not been run before
-        new_df = new_df[new_df["_merge"] == "left_only"].drop("_merge", axis=1)
+        new_df = merged[merged["_merge"] == "left_only"].drop(columns=["_merge"])
 
     new_df = new_df.sort_values(
         by=["oeis_id", "include_description", "capability", "model_name"]
