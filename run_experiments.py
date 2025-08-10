@@ -163,6 +163,7 @@ def estimate_experiment_costs(existing_df: pd.DataFrame, new_df: pd.DataFrame):
     print(f"  Experiments with cost estimates: {experiments_with_estimates}")
     print(f"  Experiments without cost estimates: {experiments_without_estimates}")
     print(f"  Estimated total cost: ${total_estimated_cost:.4f}")
+    print(f"  Total running cost: ${existing_df['cost'].sum():.4f}")
 
 
 async def guess_next_integer(
@@ -191,20 +192,23 @@ async def guess_next_integer(
                     # top_k=TOP_K,
                     timeout=TIMEOUT["call"],
                 )
+
+                content = response.choices[0].message.content
+                cost += response._hidden_params["response_cost"]
+                messages.append({"role": "assistant", "content": content})
+
+                if VERBOSE >= 2:
+                    print("  Prompt:")
+                    print(textwrap.indent(prompt, prefix="  | "))
+                    print("  Response:")
+                    print(textwrap.indent(content, prefix="  | "))
+
+                return content
+
             except Exception as e:
                 if r == RETRIES - 1:
                     log["error"] = str(e)
                     return None
-
-        content = response.choices[0].message.content
-        cost += response._hidden_params["response_cost"]
-        messages.append({"role": "assistant", "content": content})
-        if VERBOSE >= 2:
-            print("  Prompt:")
-            print(textwrap.indent(prompt, prefix="  | "))
-            print("  Response:")
-            print(textwrap.indent(content, prefix="  | "))
-        return content
 
     sequence_str = ", ".join(str(s) for s in sequence_info["partial"])
     prompt = f"Given the integer sequence: {sequence_str}\n"
@@ -243,7 +247,7 @@ async def guess_next_integer(
     if response is None:
         return None, log
 
-    log["messages"] = [prompt, response]
+    log["messages"].extend([prompt, response])
 
     try:
         guess = int(response)
@@ -257,7 +261,10 @@ async def guess_next_integer(
 
 def save_log(log: dict, exp_info: dict):
     timestamp = exp_info.pop("timestamp")
-    exp_id = exp_info.pop("experiment_id") or "ERROR"
+    if id := exp_info.pop("experiment_id"):
+        exp_id = f"{id:019d}"
+    else:
+        exp_id = "ERROR"
     log.update(exp_info)
     log_name = f"{timestamp}-{exp_id}.json"
     with open(LOGS_DIR / log_name, "w") as f:
