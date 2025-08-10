@@ -67,8 +67,6 @@ PARAMETER_SPACE: dict[str, list] = {
     "include_description": [False],  # True,
     "sequence_start": [0],
     "sequence_length": [8],
-    "experiment_id": [pd.NA],
-    "timestamp": [pd.NaT],
 }
 
 PARAMETER_SPACE_DTYPE: dict = {
@@ -77,8 +75,6 @@ PARAMETER_SPACE_DTYPE: dict = {
     "include_description": "boolean",
     "sequence_start": "Int64",
     "sequence_length": "Int64",
-    "experiment_id": "Int64",
-    "timestamp": "datetime64[ns]",
 }
 
 # File paths
@@ -87,6 +83,8 @@ EXPERIMENTS_DF_PATH: Path = Path("data/experiments.parquet")
 LOGS_DIR: Path = Path("data/experiment_logs")
 
 OUTCOME_SPACE: dict[str, list] = {
+    "experiment_id": [pd.NA],
+    "timestamp": [pd.NaT],
     "guess": [pd.NA],
     "expected": [pd.NA],
     "is_correct": [pd.NA],
@@ -95,10 +93,12 @@ OUTCOME_SPACE: dict[str, list] = {
 }
 
 OUTCOME_SPACE_DTYPE: dict[str, str] = {
-    "guess": "Int64",
-    "expected": "Int64",
+    "experiment_id": "Int64",
+    "timestamp": "datetime64[ns]",
+    "guess": "Float64",
+    "expected": "Float64",
     "is_correct": "boolean",
-    "absolute_error": "Int64",
+    "absolute_error": "Float64",
     "cost": "Float64",
 }
 
